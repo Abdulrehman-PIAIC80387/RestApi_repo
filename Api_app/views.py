@@ -1,5 +1,6 @@
 import json
 from telnetlib import STATUS
+from time import sleep
 from unicodedata import name
 from urllib import request
 from django.shortcuts import render
@@ -89,14 +90,21 @@ class registeruser(APIView):
 
 
 
+import socket
 
 
-
+from rest_framework.decorators import authentication_classes
+from rest_framework.authentication import TokenAuthentication
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import api_view, permission_classes
+from wsgiref.util import FileWrapper
 
 
 @api_view(['GET', 'POST'])
+# @authentication_classes([TokenAuthentication])
+# @permission_classes([IsAuthenticated])
 def new1(request):
-    
+
     if request.method=="GET":
         QuerySet = APi_default.objects.all()
         serializer = AddressSerial(QuerySet,many=True)
@@ -107,6 +115,26 @@ def new1(request):
         serializer = AddressSerial(data=request.data)
         if serializer.is_valid():
             serializer.save()
+            sleep(3)
+            host = socket.gethostname()  # as both code is running on same pc
+            port = 5000  # socket server port number
+
+            client_socket = socket.socket()  # instantiate
+            client_socket.connect((host, port))  # connect to the server
+
+            message = "hello g"  # take input
+            client_socket.send(message.encode())  # send message
+            
+
+            client_socket.close()  # close the connection
+            
+
+            # file = FileWrapper(open('C:\\Users\\Galaxy\\Desktop\\New folder\\FinalJoke.mp4', 'rb'))
+            # response = HttpResponse(file, content_type='video/mp4')
+            # response['Content-Disposition'] = 'attachment; filename=my_video.mp4'
+            # print(response)
+            # return response
+            
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
